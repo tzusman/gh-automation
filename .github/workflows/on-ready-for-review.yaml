@@ -1,0 +1,42 @@
+name: Pre-Review Checks
+
+on:
+  pull_request:
+    types: [ready_for_review]
+
+env:
+  GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+
+jobs:
+
+  checks:
+    name: Run checks
+    runs-on: ubuntu-latest
+    steps:
+
+      - uses: actions/checkout@v2
+
+      - name: The Check
+        run: |
+          cat test-file
+
+      - name: Revert PR to Draft
+        if: ${{ failure() }}
+        run: |
+          PR_ID=$(gh pr view --json id -q '.id')
+
+          MUTATION='
+            mutation($id: String!) {
+              convertPullRequestToDraft(input: { pullRequestId: $PR_ID }) {
+                pullRequest {
+                  id
+                  number
+                  isDraft
+                }
+              }
+            }
+          '
+
+          echo $MUTATION
+
+          gh api graphql -F id="${id}" -f query="${MUTATION}"
