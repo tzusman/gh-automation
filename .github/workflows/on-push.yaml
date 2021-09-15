@@ -1,0 +1,40 @@
+name: Create PR
+
+on:
+  push:
+    branches-ignore:
+      - develop
+      - master
+      - production
+
+env:
+  BASE_BRANCH: develop
+
+jobs:
+
+  upsert_pr:
+    name: Create a PR if it doesn't already exit
+    steps:
+
+      - name: Lookup PR
+        id: lookup
+        run: |
+          gh pr view > /dev/null
+          if [ $? -eq 0 ]; then
+            echo '::set-output name=EXISTS::TRUE'
+          else
+            echo '::set-output name=EXISTS::FALSE'
+          fi
+
+      - name: Debug
+        run: echo ${{ steps.lookup.outputs.EXISTS }}
+
+      - name: Create PR
+        if: ${{ steps.lookup.outputs.EXISTS == "FALSE" }}
+        run: |
+          gh pr create \
+            --base develop \
+            --draft \
+            --assignee ${{ github.actor }} \
+            --title "Example Title" \
+            --body "Example Body"
