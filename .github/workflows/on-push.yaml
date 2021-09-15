@@ -46,7 +46,8 @@ jobs:
         env:
           ISSUE_NUMBER: ${{ steps.number.outputs.ISSUE_NUMBER }}
         run: |
-          TITLE=$(gh issue view $ISSUE_NUMBER --json "title" -q ".title")
+          echo "Issue number: $ISSUE_NUMBER"
+          TITLE=$(gh issue view "$ISSUE_NUMBER" --json "title" -q ".title")
           echo "Issue title: $TITLE"
           echo '::set-output name=ISSUE_TITLE::$TITLE'
 
