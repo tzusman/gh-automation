@@ -24,11 +24,11 @@ jobs:
         id: lookup
         continue-on-error: true
         run: |
-          gh pr view > /dev/null
-          if [ $? -eq 0 ]; then
-            echo '::set-output name=EXISTS::TRUE'
+          OUTPUT=$(gh pr view --json id || true)
+          if [[ $OUTPUT == "" ]]; then
+            echo "::set-output name=EXISTS::FALSE"
           else
-            echo '::set-output name=EXISTS::FALSE'
+            echo "::set-output name=EXISTS::TRUE"
           fi
 
       - name: Debug
