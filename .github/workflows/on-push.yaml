@@ -102,7 +102,7 @@ jobs:
           echo "Message: $MESSAGE"
           ISSUE_NUMBER=$(echo $MESSAGE | sed -E 's/^.*#([0-9]+).*$/\1/')
           echo "ISSUE from commit: $ISSUE_NUMBER"
-          if [[ $ISSUE_NUMBER =~ [^0-9] ]]; then
+          if [[ "$ISSUE_NUMBER" =~ [0-9]+ ]]; then
             echo "::set-output name=ISSUE_NUMBER::$ISSUE_NUMBER"
           fi
 
