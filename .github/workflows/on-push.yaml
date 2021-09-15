@@ -16,6 +16,8 @@ jobs:
   lookup:
     name: Lookup PR
     runs-on: ubuntu-latest
+    outputs:
+      PR_ID: ${{ steps.pr.outputs.ID }}
     steps:
 
       - uses: actions/checkout@v2
@@ -32,7 +34,9 @@ jobs:
 
   create:
     name: Create PR
-    if: ${{ steps.pr.outputs.id == '' }}
+    needs:
+      - lookup
+    if: ${{ needs.lookup.outputs.PR_ID == '' }}
     runs-on: ubuntu-latest
     steps:
 
@@ -81,10 +85,12 @@ jobs:
 
   update:
     name: Update PR
-    if: ${{ steps.pr.outputs.id != '' }}
+    needs:
+      - lookup
+    if: ${{ needs.lookup.outputs.PR_ID != '' }}
     runs-on: ubuntu-latest
     env:
-      PR_ID: ${{ steps.pr.outputs.id }}
+      PR_ID: ${{ needs.lookup.outputs.PR_ID }}
     steps:
 
       - uses: actions/checkout@v2
