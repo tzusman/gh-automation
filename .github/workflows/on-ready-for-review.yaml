@@ -23,12 +23,12 @@ jobs:
       - name: Revert PR to Draft
         if: ${{ failure() }}
         run: |
-          PR_ID=${{ github.pull_request.id }}
+          PR_ID=${{ github.event.pull_request.id }}
           echo "PR ID: $PR_ID"
 
           MUTATION='
-            mutation($PR_ID: String!) {
-              convertPullRequestToDraft(input: { pullRequestId: $PR_ID }) {
+            mutation($id: String!) {
+              convertPullRequestToDraft(input: { pullRequestId: $id }) {
                 pullRequest {
                   id
                   number
