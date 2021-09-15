@@ -26,7 +26,7 @@ jobs:
         id: pr
         continue-on-error: true
         run: |
-          ID=$(gh pr view --json id || true)
+          ID=$(gh pr view --json id --q ".id" || true)
           echo "::set-output name=ID::$ID"
 
       - name: Debug
@@ -95,14 +95,51 @@ jobs:
 
       - uses: actions/checkout@v2
 
+      - name: Check commit message
+        id: commit
+        run: |
+          MESSAGE="${{ github.event.head_commit.message }}"
+          echo "Message: $MESSAGE"
+          ISSUE_NUMBER=$(echo $MESSAGE | sed -E 's/^.*#([0-9]+).*$/\1/')
+          echo "ISSUE from commit: $ISSUE_NUMBER"
+          if [[ $ISSUE_NUMBER =~ [^0-9] ]]; then
+            echo "::set-output name=ISSUE_NUMBER::$ISSUE_NUMBER"
+          fi
+
+      - name: Should add issue title
+        id: add
+        if: ${{ needs.commit.outputs.ISSUE_NUMBER != '' }}
+        env:
+          PR_BODY: ${{ steps.body.outputs.PR_BODY }}
+        run: |
+          if [[ ${PR_BODY} != *"#$ISSUE_NUMBER "* ]];then
+            echo "::set-output name=ADD_ISSUE::TRUE"
+          else
+            echo "::set-output name=ADD_ISSUE::FALSE"
+          fi
+
+      - name: Get issue title
+        id: title
+        if: ${{ needs.commit.outputs.ISSUE_NUMBER != '' }}
+        env:
+          ISSUE_NUMBER: ${{ steps.commit.outputs.ISSUE_NUMBER }}
+        run: |
+          echo "Issue number: $ISSUE_NUMBER"
+          TITLE=$(gh issue view "$ISSUE_NUMBER" --json "title" -q ".title")
+          echo "Issue title: $TITLE"
+          echo "::set-output name=ISSUE_TITLE::$TITLE"
+
       - name: Current body
         id: body
+        if: ${{ needs.commit.outputs.ISSUE_NUMBER != '' }}
         run: |
           BODY=$(gh pr view --json body -q ".body")
           echo "::set-output name=PR_BODY::$BODY"
 
       - name: Update PR
         env:
+          ISSUE_NUMBER: ${{ steps.commit.outputs.ISSUE_NUMBER }}
+          ISSUE_TITLE: ${{ steps.title.outputs.ISSUE_TITLE }}
           PR_BODY: ${{ steps.body.outputs.PR_BODY }}
         run: |
           echo -e "$PR_BODY" > ./body
