@@ -51,15 +51,25 @@ jobs:
           echo "Issue title: $TITLE"
           echo "::set-output name=ISSUE_TITLE::$TITLE"
 
+      - name: Get issue body
+        id: body
+        env:
+          ISSUE_NUMBER: ${{ steps.number.outputs.ISSUE_NUMBER }}
+        run: |
+          BODY=$(gh issue view "$ISSUE_NUMBER" --json "body" -q ".body")
+          echo "Issue body: $BODY"
+          echo "::set-output name=ISSUE_BODY::$BODY"
+
       - name: Create PR
         if: ${{ steps.lookup.outputs.EXISTS == 'FALSE' }}
         env:
           ISSUE_NUMBER: ${{ steps.number.outputs.ISSUE_NUMBER }}
           ISSUE_TITLE: ${{ steps.title.outputs.ISSUE_TITLE }}
+          ISSUE_BODY: ${{ steps.body.outputs.ISSUE_BODY }}
         run: |
           gh pr create \
             --base develop \
             --draft \
             --assignee ${{ github.actor }} \
             --title "$ISSUE_TITLE" \
-            --body "#$ISSUE_NUMBER $ISSUE_TITLE"
+            --body "$ISSUE_BODY\n\n---\n\n#$ISSUE_NUMBER $ISSUE_TITLE"
