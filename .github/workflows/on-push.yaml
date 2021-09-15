@@ -13,26 +13,30 @@ env:
 
 jobs:
 
-  upsert_pr:
-    name: Upsert PR
+  lookup:
+    name: Lookup PR
     runs-on: ubuntu-latest
     steps:
 
       - uses: actions/checkout@v2
 
       - name: Lookup PR
-        id: lookup
+        id: pr
         continue-on-error: true
         run: |
-          OUTPUT=$(gh pr view --json id || true)
-          if [[ $OUTPUT == "" ]]; then
-            echo "::set-output name=EXISTS::FALSE"
-          else
-            echo "::set-output name=EXISTS::TRUE"
-          fi
+          ID=$(gh pr view --json id || true)
+          echo "::set-output name=ID::$ID"
 
       - name: Debug
-        run: echo ${{ steps.lookup.outputs.EXISTS }}
+        run: echo ${{ steps.pr.outputs.ID }}
+
+  create:
+    name: Create PR
+    if: ${{ steps.pr.outputs.id == '' }}
+    runs-on: ubuntu-latest
+    steps:
+
+      - uses: actions/checkout@v2
 
       - name: Determine issue number
         id: number
@@ -61,15 +65,41 @@ jobs:
           echo "::set-output name=ISSUE_BODY::$BODY"
 
       - name: Create PR
-        if: ${{ steps.lookup.outputs.EXISTS == 'FALSE' }}
         env:
           ISSUE_NUMBER: ${{ steps.number.outputs.ISSUE_NUMBER }}
           ISSUE_TITLE: ${{ steps.title.outputs.ISSUE_TITLE }}
           ISSUE_BODY: ${{ steps.body.outputs.ISSUE_BODY }}
         run: |
+          echo -e "$ISSUE_BODY\n\n---\n\n#$ISSUE_NUMBER $ISSUE_TITLE" > ./body
+
           gh pr create \
             --base develop \
             --draft \
             --assignee ${{ github.actor }} \
             --title "$ISSUE_TITLE" \
-            --body "$ISSUE_BODY\n\n---\n\n#$ISSUE_NUMBER $ISSUE_TITLE"
+            --body-file ./body
+
+  update:
+    name: Update PR
+    if: ${{ steps.pr.outputs.id != '' }}
+    runs-on: ubuntu-latest
+    env:
+      PR_ID: ${{ steps.pr.outputs.id }}
+    steps:
+
+      - uses: actions/checkout@v2
+
+      - name: Current body
+        id: body
+        run: |
+          BODY=$(gh pr view --json body -q ".body")
+          echo "::set-output name=PR_BODY::$BODY"
+
+      - name: Update PR
+        env:
+          PR_BODY: ${{ steps.body.outputs.PR_BODY }}
+        run: |
+          echo -e "$PR_BODY" > ./body
+          echo -e "#$ISSUE_NUMBER $ISSUE_TITLE" >> ./body
+
+          gh pr edit $PR_ID --body-file ./body

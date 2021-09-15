@@ -52,7 +52,6 @@ fi
 git checkout develop
 git pull origin develop
 git checkout -b $ISSUE_BRANCH
-git branch --set-upstream-to origin/$ISSUE_BRANCH &> /dev/null
 
 echo
 
