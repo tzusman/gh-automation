@@ -108,7 +108,7 @@ jobs:
 
       - name: Should add issue title
         id: add
-        if: ${{ needs.commit.outputs.ISSUE_NUMBER != '' }}
+        if: ${{ steps.commit.outputs.ISSUE_NUMBER != '' }}
         env:
           PR_BODY: ${{ steps.body.outputs.PR_BODY }}
         run: |
@@ -120,7 +120,7 @@ jobs:
 
       - name: Get issue title
         id: title
-        if: ${{ needs.commit.outputs.ISSUE_NUMBER != '' }}
+        if: ${{ steps.commit.outputs.ISSUE_NUMBER != '' }}
         env:
           ISSUE_NUMBER: ${{ steps.commit.outputs.ISSUE_NUMBER }}
         run: |
@@ -131,12 +131,13 @@ jobs:
 
       - name: Current body
         id: body
-        if: ${{ needs.commit.outputs.ISSUE_NUMBER != '' }}
+        if: ${{ steps.commit.outputs.ISSUE_NUMBER != '' }}
         run: |
           BODY=$(gh pr view --json body -q ".body")
           echo "::set-output name=PR_BODY::$BODY"
 
       - name: Update PR
+        if: ${{ steps.commit.outputs.ISSUE_NUMBER != '' }}
         env:
           ISSUE_NUMBER: ${{ steps.commit.outputs.ISSUE_NUMBER }}
           ISSUE_TITLE: ${{ steps.title.outputs.ISSUE_TITLE }}
