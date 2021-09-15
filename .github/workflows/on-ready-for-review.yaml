@@ -26,7 +26,7 @@ jobs:
           PR_ID=$(gh pr view --json id -q '.id')
 
           MUTATION='
-            mutation($id: String!) {
+            mutation($PR_ID: String!) {
               convertPullRequestToDraft(input: { pullRequestId: $PR_ID }) {
                 pullRequest {
                   id
@@ -39,4 +39,4 @@ jobs:
 
           echo $MUTATION
 
-          gh api graphql -F id="${id}" -f query="${MUTATION}"
+          gh api graphql -F id="${PR_ID}" -f query="${MUTATION}"
