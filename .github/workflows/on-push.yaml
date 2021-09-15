@@ -17,7 +17,7 @@ jobs:
     name: Lookup PR
     runs-on: ubuntu-latest
     outputs:
-      PR_ID: ${{ steps.pr.outputs.ID }}
+      PR_NUMBER: ${{ steps.pr.outputs.NUMBER }}
     steps:
 
       - uses: actions/checkout@v2
@@ -26,17 +26,17 @@ jobs:
         id: pr
         continue-on-error: true
         run: |
-          ID=$(gh pr view --json id -q ".id" || true)
-          echo "::set-output name=ID::$ID"
+          NUMBER=$(gh pr view --json number -q ".number" || true)
+          echo "::set-output name=NUMBER::$NUMBER"
 
       - name: Debug
-        run: echo ${{ steps.pr.outputs.ID }}
+        run: echo ${{ steps.pr.outputs.NUMBER }}
 
   create:
     name: Create PR
     needs:
       - lookup
-    if: ${{ needs.lookup.outputs.PR_ID == '' }}
+    if: ${{ needs.lookup.outputs.PR_NUMBER == '' }}
     runs-on: ubuntu-latest
     steps:
 
@@ -87,10 +87,10 @@ jobs:
     name: Update PR
     needs:
       - lookup
-    if: ${{ needs.lookup.outputs.PR_ID != '' }}
+    if: ${{ needs.lookup.outputs.PR_NUMBER != '' }}
     runs-on: ubuntu-latest
     env:
-      PR_ID: ${{ needs.lookup.outputs.PR_ID }}
+      PR_NUMBER: ${{ needs.lookup.outputs.PR_NUMBER }}
     steps:
 
       - uses: actions/checkout@v2
@@ -146,4 +146,4 @@ jobs:
           echo -e "$PR_BODY" > ./body
           echo -e "#$ISSUE_NUMBER $ISSUE_TITLE" >> ./body
 
-          gh pr edit $PR_ID --body-file ./body
+          gh pr edit $PR_NUMBER --body-file ./body
