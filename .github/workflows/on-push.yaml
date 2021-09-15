@@ -14,6 +14,7 @@ jobs:
 
   upsert_pr:
     name: Create a PR if it doesn't already exit
+    runs-on: ubuntu-latest
     steps:
 
       - name: Lookup PR
