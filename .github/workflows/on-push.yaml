@@ -8,12 +8,13 @@ on:
       - production
 
 env:
+  GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
   BASE_BRANCH: develop
 
 jobs:
 
   upsert_pr:
-    name: Create a PR if it doesn't already exit
+    name: Upsert PR
     runs-on: ubuntu-latest
     steps:
 
