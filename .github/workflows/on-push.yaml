@@ -29,12 +29,31 @@ jobs:
       - name: Debug
         run: echo ${{ steps.lookup.outputs.EXISTS }}
 
+      - name: Determine issue number
+        id: number
+        run: |
+          ISSUE_NUMBER=$(echo ${{ github.ref }} | sed -E 's/^refs\/heads\/(feature|bug|hotfix)\/([0-9]+)-.+$/\2/')
+          echo "Issue number: $ISSUE_NUMBER"
+          echo '::set-output name=ISSUE_NUMBER::$ISSUE_NUMBER'
+
+      - name: Get issue title
+        id: title
+        env:
+          ISSUE_NUMBER: ${{ steps.number.outputs.ISSUE_NUMBER }}
+        run: |
+          TITLE=$(gh issue view $ISSUE_NUMBER --json "title" -q ".title")
+          echo "Issue title: $TITLE"
+          echo '::set-output name=ISSUE_TITLE::$TITLE'
+
       - name: Create PR
-        if: ${{ steps.lookup.outputs.EXISTS == "FALSE" }}
+        if: ${{ steps.lookup.outputs.EXISTS == 'FALSE' }}
+        env:
+          ISSUE_NUMBER: ${{ steps.number.outputs.ISSUE_NUMBER }}
+          ISSUE_TITLE: ${{ steps.title.outputs.ISSUE_TITLE }}
         run: |
           gh pr create \
             --base develop \
             --draft \
             --assignee ${{ github.actor }} \
-            --title "Example Title" \
-            --body "Example Body"
+            --title "$ISSUE_TITLE" \
+            --body "#$ISSUE_NUMBER $ISSUE_TITLE"
