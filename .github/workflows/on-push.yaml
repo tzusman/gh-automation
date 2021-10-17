@@ -67,10 +67,11 @@ jobs:
           ISSUE_TITLE: ${{ steps.title.outputs.ISSUE_TITLE }}
           ISSUE_BODY: ${{ steps.body.outputs.ISSUE_BODY }}
         run: |
-          echo "$ISSUE_BODY\n\n---\n\n#$ISSUE_NUMBER $ISSUE_TITLE" | \
-            gh pr create \
-              --base develop \
-              --draft \
-              --assignee ${{ github.actor }} \
-              --title "#${ISSUE_NUMBER} ${ISSUE_TITLE}" \
-              --body-file -
+          echo "$ISSUE_BODY\n\n---\n\n#$ISSUE_NUMBER $ISSUE_TITLE" > body.tmp
+          cat body.tmp
+          gh pr create \
+            --base develop \
+            --draft \
+            --assignee ${{ github.actor }} \
+            --title "#${ISSUE_NUMBER} ${ISSUE_TITLE}" \
+            --body-file body.tmp
