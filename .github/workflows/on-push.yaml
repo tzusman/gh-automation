@@ -80,4 +80,4 @@ jobs:
         env:
           ISSUE_NUMBER: ${{ steps.number.outputs.ISSUE_NUMBER }}
         run: |
-          gh issue edit $ISSUE_NUMBER --add-assignee @me
+          gh issue edit $ISSUE_NUMBER --add-assignee @GITHUB_ACTOR
