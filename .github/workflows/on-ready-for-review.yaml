@@ -22,4 +22,4 @@ jobs:
 
       - name: Revert PR to Draft
         if: ${{ failure() }}
-        run: ./github/workflows/revert-to-draft.sh
+        run: ./.github/workflows/revert-to-draft.sh
