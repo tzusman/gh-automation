@@ -1,0 +1,36 @@
+#!/bin/bash
+set -e
+
+if [[ $# -eq 0 ]]; then
+  id=$(gh pr view --json id -q '.id')
+  number=$(gh pr view --json number -q '.number')
+else
+  number=$1
+  QUERY='
+    query($owner: String!, $name: String!, $number: Int!) {
+      repository(owner: $owner, name: $name) {
+        pullRequest(number: $number) {
+          id
+          number
+          isDraft
+        }
+      }
+    }
+  '
+  id=$(gh api graphql -F owner='{owner}' -F name='{repo}' -F number="${number}" -f query="${QUERY}" -q '.data.repository.pullRequest.id')
+fi
+
+MUTATION='
+  mutation($id: String!) {
+    convertPullRequestToDraft(input: { pullRequestId: $id }) {
+      pullRequest {
+        id
+        number
+        isDraft
+      }
+    }
+  }
+'
+gh api graphql -F id="${id}" -f query="${MUTATION}" >/dev/null
+
+printf "\033[32m✓\033[0m Pull request #${number} is marked as \"draft\"\n"

@@ -28,11 +28,17 @@ if [[ $ISSUE_NUMBER =~ [^0-9] ]]; then
   exit 1
 fi
 
+CHANGES_PENDING=`git diff-index --quiet HEAD --; echo $?`
+if [[ $CHANGES_PENDING -ne 0 ]]; then
+  out "${BLUE}You must commit any changes before checking out an issue branch"
+  exit 1
+fi
+
 out "• Issue number: ${GREEN}$ISSUE_NUMBER"
 
 TITLE=$(gh issue view $ISSUE_NUMBER --json "title" --jq '.title')
 out "• Title: ${GREEN}$TITLE"
-TITLE_SLUG=$(slug $TITLE)
+TITLE_SLUG=$(slug "$TITLE")
 
 PREFIX="feature"
 BUG_TAG=$(gh issue view $ISSUE_NUMBER --json "labels" --jq '.labels.[].name | select( . == "bug" )')
@@ -42,12 +48,6 @@ fi
 
 ISSUE_BRANCH="$PREFIX/${ISSUE_NUMBER}-${TITLE_SLUG}"
 out "• Issue branch: ${GREEN}$ISSUE_BRANCH"
-
-git diff-index --quiet HEAD -- > /dev/null
-if [[ $? -ne 0 ]]; then
-  echo "You must commit any changes before checking out an issue branch"
-  exit 1
-fi
 
 git checkout develop
 git pull origin develop

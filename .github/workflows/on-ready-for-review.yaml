@@ -1,0 +1,25 @@
+name: Pre-Review Checks
+
+on:
+  pull_request:
+    types: [ready_for_review]
+
+env:
+  GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+
+jobs:
+
+  revert:
+    name: Revert to draft
+    runs-on: ubuntu-latest
+    steps:
+
+      - uses: actions/checkout@v2
+
+      - name: The Check
+        run: |
+          cat test-file
+
+      - name: Revert PR to Draft
+        if: ${{ failure() }}
+        run: ./github/workflows/revert-to-draft.sh
