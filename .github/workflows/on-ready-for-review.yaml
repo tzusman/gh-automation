@@ -22,4 +22,8 @@ jobs:
 
       - name: Revert PR to Draft
         if: ${{ failure() }}
-        run: ./.github/workflows/revert-to-draft.sh
+        run: |
+          echo "Branch: $GITHUB_REF"
+          PR_ID=$(gh pr view $GITHUB_REF --json id -q '.id')
+          echo "PR ID: $PR_ID"
+          ./.github/workflows/revert-to-draft.sh
