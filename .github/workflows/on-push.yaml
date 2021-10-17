@@ -67,7 +67,7 @@ jobs:
           ISSUE_TITLE: ${{ steps.title.outputs.ISSUE_TITLE }}
           ISSUE_BODY: ${{ steps.body.outputs.ISSUE_BODY }}
         run: |
-          echo "$ISSUE_BODY\n\n---\n\n#$ISSUE_NUMBER $ISSUE_TITLE" > body.tmp
+          echo -e "$ISSUE_BODY\n\n---\n\n#$ISSUE_NUMBER $ISSUE_TITLE" > body.tmp
           cat body.tmp
           gh pr create \
             --base develop \
@@ -75,3 +75,9 @@ jobs:
             --assignee ${{ github.actor }} \
             --title "#${ISSUE_NUMBER} ${ISSUE_TITLE}" \
             --body-file body.tmp
+
+      - name: Add assignee
+        env:
+          ISSUE_NUMBER: ${{ steps.number.outputs.ISSUE_NUMBER }}
+        run: |
+          gh issue edit $ISSUE_NUMBER --add-assignee @me
