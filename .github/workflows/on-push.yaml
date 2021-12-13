@@ -2,12 +2,10 @@ name: Create PR
 
 on:
   push:
-    branches:
-      - dont-run
-    # branches-ignore:
-    #   - develop
-    #   - master
-    #   - production
+    branches-ignore:
+      - develop
+      - master
+      - production
 
 env:
   GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
