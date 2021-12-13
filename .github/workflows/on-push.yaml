@@ -2,7 +2,7 @@ name: Create PR
 
 on:
   push:
-    branch:
+    branches:
       - dont-run
     # branches-ignore:
     #   - develop
